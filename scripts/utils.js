@@ -57,9 +57,9 @@ export async function getInfoCourse(courseId, scoreExam) {
         .find(legend => legend.textContent.trim().includes("Cách đánh giá điểm quá trình học"))
         ?.parentElement.outerHTML || "";
 
-    res = { infoGeneral, evaluationResults, scoringMethod };
-    
-    caclScorePass(doc, scoreExam);
+    const scorePass = await caclScorePass(doc, scoreExam);
+
+    res = { infoGeneral, evaluationResults, scoringMethod, scorePass };
 
     return res;
 }
@@ -93,23 +93,35 @@ export async function getScore(data) {
         });
     });
 
+    if (dataScore.length === 0) return 404;
+
     return dataScore;
 }
 
 export async function caclScorePass(data, scoreExam) {
     let dataScore = await getScore(data);
-    if (!dataScore) return;
+    if (dataScore === 404) return 404;
 
-    let qthtScore = 0;
+    let qthtScore4 = 0;
     let totalPercent = 0;
     for (let i = 0; i < dataScore.length; i++) {
-        qthtScore += dataScore[i].score * dataScore[i].percent;
+        qthtScore4 += dataScore[i].score * dataScore[i].percent;
         totalPercent += dataScore[i].percent;
     }
-
+    let qthtScore10 = qthtScore4 / totalPercent;
     scoreExam = parseFloat(scoreExam);
 
-    let score = scoreExam * (1 - totalPercent) + qthtScore;
+    let scorePassA = Math.round(((8.5 - qthtScore10 * totalPercent) / (1 - totalPercent)) * 4) / 4;
+    let scorePassB = Math.round(((7.0 - qthtScore10 * totalPercent) / (1 - totalPercent)) * 4) / 4;
+    let scorePassC = Math.round(((5.5 - qthtScore10 * totalPercent) / (1 - totalPercent)) * 4) / 4;
+    let scorePassD = Math.round(((4.0 - qthtScore10 * totalPercent) / (1 - totalPercent)) * 4) / 4;
 
-    return score;
+    let scorePass = {
+        A: scorePassA < 0 ? 0 : scorePassA,
+        B: scorePassB < 0 ? 0 : scorePassB,
+        C: scorePassC < 0 ? 0 : scorePassC,
+        D: scorePassD < 0 ? 0 : scorePassD
+    };
+
+    return scorePass;
 }
