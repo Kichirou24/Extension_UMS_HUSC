@@ -22,10 +22,23 @@
                 "*://student.husc.edu.vn/Statistics/HistoryOfStudying"
             ],
             "js": [
-                "scripts/content_statistic.js"
+                "scripts/content_statistic.js",
+                "scripts/content_detail.js"
             ],
             "css": [
                 "styles/bootstrap-icons.css"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "scripts/utils.js",
+                "scripts/chart.js"
+            ],
+            "matches": [
+                "*://student.husc.edu.vn/*"
             ]
         }
     ],
