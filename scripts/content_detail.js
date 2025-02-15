@@ -24,7 +24,7 @@
         content.style.borderRadius = "15px";
         content.style.boxShadow = "0px 0px 15px rgba(0, 0, 0, 0.3)";
         content.style.width = "90%";
-        content.style.height = "60%";
+        content.style.height = "65%";
         content.style.maxWidth = "1000px";
         content.style.maxHeight = "100vh";
         content.style.overflowY = "auto";
@@ -69,7 +69,34 @@
             <div>${res.evaluationResults || "Không có dữ liệu"}</div>
         `;
 
+        let scoreOverlay = document.createElement("div");
+        scoreOverlay.style.backgroundColor = "rgba(227, 215, 132, 0.48)";
+        scoreOverlay.style.padding = "15px";
+        scoreOverlay.style.borderRadius = "10px";
+        scoreOverlay.style.marginTop = "20px";
+        scoreOverlay.style.textAlign = "center";
+        scoreOverlay.style.fontSize = "16px";
+        scoreOverlay.style.fontWeight = "bold";
+        scoreOverlay.style.display = "flex";
+        scoreOverlay.style.justifyContent = "center";
+        scoreOverlay.style.alignItems = "center";
+        scoreOverlay.style.gap = "15px";
+
+        scoreOverlay.innerHTML = `
+        <span>Điểm thi tối thiểu để có thể đạt:</span>
+        <span style="color: #28a745;">A: ${res.scorePass.A}</span>
+        <span> / </span>
+        <span style="color: #007bff;">B: ${res.scorePass.B}</span>
+        <span> / </span>
+        <span style="color: #ffc107;">C: ${res.scorePass.C}</span>
+        <span> / </span>
+        <span style="color: #dc3545;">D: ${res.scorePass.D}</span>
+        `;
+
         content.appendChild(closeButton);
+
+        if (res.scorePass !== 404)
+            content.appendChild(scoreOverlay);
         overlay.appendChild(content);
         document.body.appendChild(overlay);
 
