@@ -27,10 +27,10 @@
             padding: "30px",
             borderRadius: "15px",
             boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.3)",
-            width: "90%",
-            height: "85%",
-            maxWidth: "1200px",
-            maxHeight: "750px",
+            width: "1000px",
+            height: "620px",
+            maxWidth: "60%",
+            maxHeight: "85%",
             overflowY: "auto",
             position: "relative",
             opacity: "0",
@@ -94,16 +94,18 @@
         });
         scoreOverlay.id = "scoreOverlay";
 
-        scoreOverlay.innerHTML = `
-        <span>Điểm thi tối thiểu để có thể đạt:</span>
-        <span style="color: #28a745;">A: ${res.scorePass.A}</span>
-        <span> | </span>
-        <span style="color: #007bff;">B: ${res.scorePass.B}</span>
-        <span> | </span>
-        <span style="color: #ffc107;">C: ${res.scorePass.C}</span>
-        <span> | </span>
-        <span style="color: #dc3545;">D: ${res.scorePass.D}</span>
-        `;
+        if (res.scorePass && res.scorePass !== 404) {
+            scoreOverlay.innerHTML = `
+            <span>Điểm thi tối thiểu để có thể đạt:</span>
+            <span style="color: #28a745;">A: ${res.scorePass.A}</span>
+            <span> | </span>
+            <span style="color: #007bff;">B: ${res.scorePass.B}</span>
+            <span> | </span>
+            <span style="color: #ffc107;">C: ${res.scorePass.C}</span>
+            <span> | </span>
+            <span style="color: #dc3545;">D: ${res.scorePass.D}</span>
+            `;
+        }
 
         content.appendChild(closeButton);
 

@@ -5,9 +5,9 @@
         const res = await utils.getInfo();
         const overlay = createOverlay();
         const content = createContent();
-        const tabs = createTabs();
         const panelContainer = createPanelContainer();
         const panels = createPanels(res);
+        const tabs = createTabs(panelContainer, panels);
 
         panelContainer.appendChild(panels[0]);
         content.appendChild(createCloseButton(overlay, content));
@@ -51,10 +51,10 @@
             padding: "30px",
             borderRadius: "15px",
             boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.3)",
-            width: "100%",
-            height: "85%",
-            maxWidth: "1200px",
-            maxHeight: "750px",
+            width: "1200px",
+            height: "700px",
+            maxWidth: "100%",
+            maxHeight: "85%",
             overflowY: "auto",
             position: "relative",
             opacity: "0",
@@ -66,7 +66,7 @@
         return content;
     }
 
-    function createTabs() {
+    function createTabs(panelContainer, panels) {
         const tabs = document.createElement("div");
         tabs.id = "tabs";
         Object.assign(tabs.style, {
