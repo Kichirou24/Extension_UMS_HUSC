@@ -1,4 +1,4 @@
-function convertScore(score) {
+async function convertScore(score) {
     if (score >= 8.5) return 'A';
     else if (score >= 7.0) return 'B';
     else if (score >= 5.5) return 'C';
@@ -6,35 +6,53 @@ function convertScore(score) {
     else return 'F';
 }
 
-export function countGradesAndCredits() {
-    let gradesCount = { A: 0, B: 0, C: 0, D: 0, F: 0 };
-    let totalCredits = 0;
+async function convertAcademicPerformance(GPA4) {
+    if (GPA4 >= 3.6) return 'Xuất sắc';
+    else if (GPA4 >= 3.2) return 'Giỏi';
+    else if (GPA4 >= 2.5) return 'Khá';
+    else if (GPA4 >= 2.0) return 'Trung bình';
+    else return 'Yếu';
+}
 
-    document.querySelectorAll("tr").forEach(row => {
+export async function getInfo() {
+    let res = {};
+    const response = await fetch(`https://student.husc.edu.vn/Statistics/StudyResult/`);
+    const data = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data, "text/html");
+
+    let admissionCourse = doc.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(1) > div > p").textContent;
+    let fieldOfStudy = doc.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(2) > div > p").textContent;
+    let totalCredits = doc.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(4) > div.col-xs-2 > p").textContent;
+    let fullname = doc.querySelector("#wrapper > div.panel-sidebar-left > div > div.hitec-information > h5").textContent;
+
+    totalCredits = parseFloat(totalCredits.replace(",", "."));
+    let GPA4 = doc.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(4) > div.col-xs-3 > p").textContent;
+    GPA4 = parseFloat(GPA4.replace(",", "."));
+    let GPA10 = 0;
+
+    let gradesCount = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+    doc.querySelectorAll("tr").forEach(async row => {
         let ceil = row.querySelectorAll("td.text-center");
         if (ceil.length >= 6) {
-            let score = parseFloat(ceil[6].textContent.trim());
+            let score = parseFloat(ceil[4].textContent.trim());
+            let credit = parseFloat(ceil[1].textContent.trim());
+
             if (!isNaN(score)) {
-                let grade = convertScore(score);
+                let grade = await convertScore(score);
                 gradesCount[grade]++;
 
-                if (grade !== 'F') {
-                    let credit = parseInt(ceil[2].textContent.trim());
-                    totalCredits += credit;
-                }
+                if (grade !== 'F')
+                    GPA10 += (score * credit);
             }
         }
     })
 
-    return { gradesCount: gradesCount, totalCredits: totalCredits };
-}
-
-export function getInfo() {
-    let fullName = document.querySelector("#wrapper > div.panel-sidebar-left > div > div.hitec-information > h5").textContent.trim();
-    let cource = document.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(1) > div > p").textContent.trim();
-    let major = document.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(2) > div > p").textContent.trim();
-
-    return { fullName: fullName, cource: cource, major: major };
+    GPA10 = Math.round((GPA10 / totalCredits) * 100) / 100;
+    
+    let academicPerformance = await convertAcademicPerformance(GPA4);
+    res = { fullname: fullname, admissionCourse: admissionCourse, fieldOfStudy: fieldOfStudy, totalCredits: totalCredits, GPA4: GPA4, GPA10: GPA10, gradesCount: gradesCount, academicPerformance: academicPerformance };
+    return res;
 }
 
 export async function getInfoCourse(courseId, scoreExam) {
@@ -63,7 +81,6 @@ export async function getInfoCourse(courseId, scoreExam) {
 
     return res;
 }
-
 
 export async function getScore(data) {
     let table = data.querySelector("fieldset table");
