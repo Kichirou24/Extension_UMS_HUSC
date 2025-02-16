@@ -5,43 +5,52 @@
         let res = await utils.getInfoCourse(courseId, scoreExam);
 
         let overlay = document.createElement("div");
-        overlay.style.position = "fixed";
-        overlay.style.top = "0";
-        overlay.style.left = "0";
-        overlay.style.width = "100%";
-        overlay.style.height = "100%";
-        overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-        overlay.style.display = "flex";
-        overlay.style.justifyContent = "center";
-        overlay.style.alignItems = "center";
-        overlay.style.zIndex = "9999";
-        overlay.style.opacity = "0";
-        overlay.style.transition = "opacity 0.3s ease-in-out";
+        Object.assign(overlay.style, {
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: "9999",
+            opacity: "0",
+            transition: "opacity 0.3s ease-in-out"
+        });
+        overlay.id = "overlay";
 
         let content = document.createElement("div");
-        content.style.backgroundColor = "white";
-        content.style.padding = "30px";
-        content.style.borderRadius = "15px";
-        content.style.boxShadow = "0px 0px 15px rgba(0, 0, 0, 0.3)";
-        content.style.width = "90%";
-        content.style.height = "65%";
-        content.style.maxWidth = "1000px";
-        content.style.maxHeight = "100vh";
-        content.style.overflowY = "auto";
-        content.style.position = "relative";
-        content.style.opacity = "0";
-        content.style.transform = "translateY(-20px)";
-        content.style.transition = "opacity 0.3s ease-in-out, transform 0.3s ease-in-out";
+        Object.assign(content.style, {
+            backgroundColor: "white",
+            padding: "30px",
+            borderRadius: "15px",
+            boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.3)",
+            width: "90%",
+            height: "65%",
+            maxWidth: "1000px",
+            maxHeight: "100vh",
+            overflowY: "auto",
+            position: "relative",
+            opacity: "0",
+            transform: "translateY(-20px)",
+            transition: "opacity 0.3s ease-in-out, transform 0.3s ease-in-out"
+        });
+        content.id = "content";
 
         let closeButton = document.createElement("span");
         closeButton.innerHTML = "&times;";
-        closeButton.style.position = "absolute";
-        closeButton.style.top = "10px";
-        closeButton.style.right = "15px";
-        closeButton.style.fontSize = "24px";
-        closeButton.style.cursor = "pointer";
-        closeButton.style.color = "#ff4d4d";
-        closeButton.style.fontWeight = "bold";
+        Object.assign(closeButton.style, {
+            position: "absolute",
+            top: "10px",
+            right: "15px",
+            fontSize: "24px",
+            cursor: "pointer",
+            color: "#ff4d4d",
+            fontWeight: "bold"
+        });
+        closeButton.id = "closeButton";
 
         closeButton.onmouseover = () => {
             closeButton.style.color = "red";
@@ -70,26 +79,29 @@
         `;
 
         let scoreOverlay = document.createElement("div");
-        scoreOverlay.style.backgroundColor = "rgba(227, 215, 132, 0.48)";
-        scoreOverlay.style.padding = "15px";
-        scoreOverlay.style.borderRadius = "10px";
-        scoreOverlay.style.marginTop = "20px";
-        scoreOverlay.style.textAlign = "center";
-        scoreOverlay.style.fontSize = "16px";
-        scoreOverlay.style.fontWeight = "bold";
-        scoreOverlay.style.display = "flex";
-        scoreOverlay.style.justifyContent = "center";
-        scoreOverlay.style.alignItems = "center";
-        scoreOverlay.style.gap = "15px";
+        Object.assign(scoreOverlay.style, {
+            backgroundColor: "rgba(227, 215, 132, 0.48)",
+            padding: "15px",
+            borderRadius: "10px",
+            marginTop: "20px",
+            textAlign: "center",
+            fontSize: "16px",
+            fontWeight: "bold",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "15px"
+        });
+        scoreOverlay.id = "scoreOverlay";
 
         scoreOverlay.innerHTML = `
         <span>Điểm thi tối thiểu để có thể đạt:</span>
         <span style="color: #28a745;">A: ${res.scorePass.A}</span>
-        <span> / </span>
+        <span> | </span>
         <span style="color: #007bff;">B: ${res.scorePass.B}</span>
-        <span> / </span>
+        <span> | </span>
         <span style="color: #ffc107;">C: ${res.scorePass.C}</span>
-        <span> / </span>
+        <span> | </span>
         <span style="color: #dc3545;">D: ${res.scorePass.D}</span>
         `;
 
@@ -113,14 +125,16 @@
                 let button = document.createElement("button");
                 button.className = "hat-button";
 
-                button.style.marginLeft = "8px";
-                button.style.padding = "4px";
-                button.style.backgroundColor = "#007bff";
-                button.style.color = "white";
-                button.style.border = "none";
-                button.style.borderRadius = "4px";
-                button.style.cursor = "pointer";
-                button.style.fontSize = "12px";
+                Object.assign(button.style, {
+                    marginLeft: "8px",
+                    padding: "4px",
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "12px"
+                });
 
                 button.innerHTML = "🎓";
 
@@ -137,7 +151,6 @@
             }
         });
     }
-
 
     addButtonHat();
 })();
