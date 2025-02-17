@@ -6,7 +6,7 @@
         const overlay = createOverlay();
         const content = createContent();
         const panelContainer = createPanelContainer();
-        const panels = createPanels(res);
+        const panels = await createPanels(res);
         const tabs = createTabs(panelContainer, panels);
 
         panelContainer.appendChild(panels[0]);
@@ -122,7 +122,7 @@
         return panelContainer;
     }
 
-    function createPanels(res) {
+    async function createPanels(res) {
         const panels = [];
         const container = document.createElement("div");
         container.className = "panel-container";
@@ -134,7 +134,7 @@
         header.style.marginBottom = "20px";
         header.innerHTML = `<h3 style="color: #007bff;">Tổng quan sinh viên</h3>`;
 
-        const overviewPanel = createOverviewPanel(res);
+        const overviewPanel = await createOverviewPanel(res);
         container.appendChild(header);
         container.appendChild(overviewPanel);
         panels.push(container);
@@ -152,7 +152,7 @@
         return panels;
     }
 
-    function createOverviewPanel(res) {
+    async function createOverviewPanel(res) {
         const overviewPanel = document.createElement("div");
         overviewPanel.className = "overview-panel";
         Object.assign(overviewPanel.style, {
@@ -167,6 +167,7 @@
 
         overviewPanel.appendChild(leftPanel);
         overviewPanel.appendChild(rightPanel);
+
         return overviewPanel;
     }
 
@@ -183,33 +184,33 @@
         });
 
         leftPanel.innerHTML = `
-            <h4 style="margin-bottom: 15px; text-align: center; color: #007bff;">Thông tin sinh viên</h4>
-            <table style="width: 100%; border-collapse: collapse; font-size: 16px;">
-                <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Họ và tên</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.fullname || "N/A"}</td></tr>
-                <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Khóa học</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.admissionCourse || "N/A"}</td></tr>
-                <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Ngành học</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.fieldOfStudy || "N/A"}</td></tr>
-                <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Tổng tín chỉ</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.totalCredits || "N/A"}</td></tr>
-                <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">ĐTB hệ 4:</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.GPA4 || "N/A"}</td></tr>
-                <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">ĐTB hệ 10:</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.GPA10 || "N/A"}</td></tr>
-                <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Học lực:</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.academicPerformance || "N/A"}</td></tr>
-                <tr>
-                    <td colspan="2" style="padding: 10px; font-weight: bold; text-align: center; color: #333;">Bảng điểm</td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="padding: 10px; text-align: center;">
-                        <span style="color: #28a745; font-weight: bold;">A: ${res.gradesCount.A ?? "N/A"}</span> |
-                        <span style="color: #007bff; font-weight: bold;">B: ${res.gradesCount.B ?? "N/A"}</span> |
-                        <span style="color: #ffc107; font-weight: bold;">C: ${res.gradesCount.C ?? "N/A"}</span> |
-                        <span style="color: #dc3545; font-weight: bold;">D: ${res.gradesCount.D ?? "N/A"}</span> |
-                        <span style="color: #bb35dc; font-weight: bold;">F: ${res.gradesCount.F ?? "N/A"}</span>
-                    </td>
-                </tr>
-            </table>
-        `;
+                <h4 style="margin-bottom: 15px; text-align: center; color: #007bff;">Thông tin sinh viên</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 16px;">
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Họ và tên</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.fullname || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Khóa học</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.admissionCourse || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Ngành học</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.fieldOfStudy || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Tổng tín chỉ</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.totalCredits || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">ĐTB hệ 4:</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.GPA4 || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">ĐTB hệ 10:</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.GPA10 || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Học lực:</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.academicPerformance || "N/A"}</td></tr>
+                    <tr>
+                        <td colspan="2" style="padding: 10px; font-weight: bold; text-align: center; color: #333;">Bảng điểm</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 10px; text-align: center;">
+                            <span style="color: #28a745; font-weight: bold;">A: ${res.gradesCount.A ?? "N/A"}</span> |
+                            <span style="color: #007bff; font-weight: bold;">B: ${res.gradesCount.B ?? "N/A"}</span> |
+                            <span style="color: #ffc107; font-weight: bold;">C: ${res.gradesCount.C ?? "N/A"}</span> |
+                            <span style="color: #dc3545; font-weight: bold;">D: ${res.gradesCount.D ?? "N/A"}</span> |
+                            <span style="color: #bb35dc; font-weight: bold;">F: ${res.gradesCount.F ?? "N/A"}</span>
+                        </td>
+                    </tr>
+                </table>
+            `;
         return leftPanel;
     }
 
-    function createRightPanel(res) {
+    function createRightPanel() {
         const rightPanel = document.createElement("div");
         rightPanel.id = "right-panel";
         Object.assign(rightPanel.style, {
@@ -223,51 +224,12 @@
             boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)"
         });
 
-        const total = Object.values(res.gradesCount).reduce((sum, val) => sum + val, 0) || 1;
-        const percentage = {
-            A: (res.gradesCount.A ?? 0) / total * 100,
-            B: (res.gradesCount.B ?? 0) / total * 100,
-            C: (res.gradesCount.C ?? 0) / total * 100,
-            D: (res.gradesCount.D ?? 0) / total * 100,
-            F: (res.gradesCount.F ?? 0) / total * 100
-        };
-
         rightPanel.innerHTML = `
             <div style="display: flex; flex-direction: column; align-items: center;">
                 <h4 style="margin-bottom: 15px; text-align: center; color: #007bff;">Biểu đồ thống kê</h4>
-                <div class="pie-chart" style="width: 300px; height: 300px; border-radius: 50%; position: relative;"></div>
-                <div class="legend" style="display: flex; gap: 10px; margin-top: 15px;">
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                        <span style="width: 40px; height: 20px; background-color: #2ecc71; display: inline-block; text-align: center;">A</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                        <span style="width: 40px; height: 20px; background-color: #3498db; display: inline-block; text-align: center;">B</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                        <span style="width: 40px; height: 20px; background-color: #f1c40f; display: inline-block; text-align: center;">C</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                        <span style="width: 40px; height: 20px; background-color: #e74c3c; display: inline-block; text-align: center;">D</span>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                        <span style="width: 40px; height: 20px; background-color: #9b59b6; display: inline-block; text-align: center;">F</span>
-                    </div>
-                </div>
+                <canvas id="gradesChart" width="300" height="300"></canvas>
             </div>
         `;
-
-        setTimeout(() => {
-            const pieChart = document.querySelector(".pie-chart");
-            if (pieChart) {
-                pieChart.style.background = `conic-gradient(
-                    #2ecc71 0% ${percentage.A}%,
-                    #3498db ${percentage.A}% ${percentage.A + percentage.B}%,
-                    #f1c40f ${percentage.A + percentage.B}% ${percentage.A + percentage.B + percentage.C}%,
-                    #e74c3c ${percentage.A + percentage.B + percentage.C}% ${percentage.A + percentage.B + percentage.C + percentage.D}%,
-                    #9b59b6 ${percentage.A + percentage.B + percentage.C + percentage.D}% 100%
-                )`;
-            }
-        }, 10);
 
         return rightPanel;
     }
@@ -302,44 +264,40 @@
 
     const style = document.createElement("style");
     style.innerHTML = `
-        .btn-statistic {
-            width: 50px; 
-            height: 50px;
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
-            white-space: nowrap; 
-        }
+            .btn-statistic {
+                width: 50px; 
+                height: 50px;
+                padding: 10px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+                white-space: nowrap; 
+            }
 
-        .btn-statistic:hover {
-            width: 180px; 
-            padding: 10px 15px;
-        }
+            .btn-statistic:hover {
+                width: 180px; 
+                padding: 10px 15px;
+            }
 
-        .btn-statistic span {
-            display: none; 
-        }
+            .btn-statistic span {
+                display: none; 
+            }
 
-        .btn-statistic:hover span {
-            display: inline; 
-        }
+            .btn-statistic:hover span {
+                display: inline; 
+            }
 
-        .btn-statistic:hover svg {
-            display: none;    
-        }
-        .pie-chart {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-        }
-        .legend {
-            text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-    `;
+            .btn-statistic:hover svg {
+                display: none;    
+            }
+
+            .legend {
+                text-align: center;
+                margin-top: 10px;
+                font-weight: bold;
+            }
+        `;
 
     function addButtonStatistic() {
         document.head.appendChild(style);
