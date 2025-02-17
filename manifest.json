@@ -35,7 +35,7 @@
         {
             "resources": [
                 "scripts/utils.js",
-                "scripts/chart.js"
+                "scripts/libs/Chart.min.js"
             ],
             "matches": [
                 "*://student.husc.edu.vn/*"

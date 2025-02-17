@@ -1,4 +1,4 @@
-function convertScore(score) {
+async function convertScore(score) {
     if (score >= 8.5) return 'A';
     else if (score >= 7.0) return 'B';
     else if (score >= 5.5) return 'C';
@@ -6,35 +6,54 @@ function convertScore(score) {
     else return 'F';
 }
 
-export function countGradesAndCredits() {
-    let gradesCount = { A: 0, B: 0, C: 0, D: 0, F: 0 };
-    let totalCredits = 0;
-
-    document.querySelectorAll("tr").forEach(row => {
-        let ceil = row.querySelectorAll("td.text-center");
-        if (ceil.length >= 6) {
-            let score = parseFloat(ceil[6].textContent.trim());
-            if (!isNaN(score)) {
-                let grade = convertScore(score);
-                gradesCount[grade]++;
-
-                if (grade !== 'F') {
-                    let credit = parseInt(ceil[2].textContent.trim());
-                    totalCredits += credit;
-                }
-            }
-        }
-    })
-
-    return { gradesCount: gradesCount, totalCredits: totalCredits };
+async function convertAcademicPerformance(GPA4) {
+    if (GPA4 >= 3.6) return 'Xuất sắc';
+    else if (GPA4 >= 3.2) return 'Giỏi';
+    else if (GPA4 >= 2.5) return 'Khá';
+    else if (GPA4 >= 2.0) return 'Trung bình';
+    else return 'Yếu';
 }
 
-export function getInfo() {
-    let fullName = document.querySelector("#wrapper > div.panel-sidebar-left > div > div.hitec-information > h5").textContent.trim();
-    let cource = document.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(1) > div > p").textContent.trim();
-    let major = document.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(2) > div > p").textContent.trim();
+export async function getInfo() {
+    let res = {};
+    const response = await fetch(`https://student.husc.edu.vn/Statistics/StudyResult/`);
+    const data = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data, "text/html");
 
-    return { fullName: fullName, cource: cource, major: major };
+    let admissionCourse = doc.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(1) > div > p").textContent;
+    let fieldOfStudy = doc.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(2) > div > p").textContent;
+    let totalCredits = doc.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(4) > div.col-xs-2 > p").textContent;
+    let fullname = doc.querySelector("#wrapper > div.panel-sidebar-left > div > div.hitec-information > h5").textContent;
+
+    totalCredits = parseFloat(totalCredits.replace(",", "."));
+    let GPA4 = doc.querySelector("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(4) > div.col-xs-3 > p").textContent;
+    GPA4 = parseFloat(GPA4.replace(",", "."));
+    let GPA10 = 0;
+
+    let gradesCount = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+    const rows = doc.querySelectorAll("tr");
+    for (const row of rows) {
+        let ceil = row.querySelectorAll("td.text-center");
+        if (ceil.length >= 6) {
+            let score = parseFloat(ceil[4].textContent.trim());
+            let credit = parseFloat(ceil[1].textContent.trim());
+
+            if (!isNaN(score)) {
+                let grade = await convertScore(score);
+                gradesCount[grade]++;
+
+                if (grade !== 'F')
+                    GPA10 += (score * credit);
+            }
+        }
+    }
+
+    GPA10 = Math.round((GPA10 / totalCredits) * 100) / 100;
+    
+    let academicPerformance = await convertAcademicPerformance(GPA4);
+    res = { fullname: fullname, admissionCourse: admissionCourse, fieldOfStudy: fieldOfStudy, totalCredits: totalCredits, GPA4: GPA4, GPA10: GPA10, gradesCount: gradesCount, academicPerformance: academicPerformance };
+    return res;
 }
 
 export async function getInfoCourse(courseId, scoreExam) {
@@ -57,13 +76,12 @@ export async function getInfoCourse(courseId, scoreExam) {
         .find(legend => legend.textContent.trim().includes("Cách đánh giá điểm quá trình học"))
         ?.parentElement.outerHTML || "";
 
-    res = { infoGeneral, evaluationResults, scoringMethod };
-    
-    caclScorePass(doc, scoreExam);
+    const scorePass = await caclScorePass(doc, scoreExam);
+
+    res = { infoGeneral, evaluationResults, scoringMethod, scorePass };
 
     return res;
 }
-
 
 export async function getScore(data) {
     let table = data.querySelector("fieldset table");
@@ -93,23 +111,35 @@ export async function getScore(data) {
         });
     });
 
+    if (dataScore.length === 0) return 404;
+
     return dataScore;
 }
 
 export async function caclScorePass(data, scoreExam) {
     let dataScore = await getScore(data);
-    if (!dataScore) return;
+    if (dataScore === 404) return 404;
 
-    let qthtScore = 0;
+    let qthtScore4 = 0;
     let totalPercent = 0;
     for (let i = 0; i < dataScore.length; i++) {
-        qthtScore += dataScore[i].score * dataScore[i].percent;
+        qthtScore4 += dataScore[i].score * dataScore[i].percent;
         totalPercent += dataScore[i].percent;
     }
-
+    let qthtScore10 = qthtScore4 / totalPercent;
     scoreExam = parseFloat(scoreExam);
 
-    let score = scoreExam * (1 - totalPercent) + qthtScore;
+    let scorePassA = Math.round(((8.5 - qthtScore10 * totalPercent) / (1 - totalPercent)) * 4) / 4;
+    let scorePassB = Math.round(((7.0 - qthtScore10 * totalPercent) / (1 - totalPercent)) * 4) / 4;
+    let scorePassC = Math.round(((5.5 - qthtScore10 * totalPercent) / (1 - totalPercent)) * 4) / 4;
+    let scorePassD = Math.round(((4.0 - qthtScore10 * totalPercent) / (1 - totalPercent)) * 4) / 4;
 
-    return score;
+    let scorePass = {
+        A: scorePassA < 0 ? 0 : scorePassA,
+        B: scorePassB < 0 ? 0 : scorePassB,
+        C: scorePassC < 0 ? 0 : scorePassC,
+        D: scorePassD < 0 ? 0 : scorePassD
+    };
+
+    return scorePass;
 }

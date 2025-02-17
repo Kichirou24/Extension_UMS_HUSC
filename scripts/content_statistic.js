@@ -1,66 +1,18 @@
 (async () => {
     const utils = await import(chrome.runtime.getURL("scripts/utils.js"));
 
-    function handleButtonClick(courseId) {
-        let overlay = document.createElement("div");
-        overlay.style.position = "fixed";
-        overlay.style.top = "0";
-        overlay.style.left = "0";
-        overlay.style.width = "100%";
-        overlay.style.height = "100%";
-        overlay.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-        overlay.style.display = "flex";
-        overlay.style.justifyContent = "center";
-        overlay.style.alignItems = "center";
-        overlay.style.zIndex = "9999";
-        overlay.style.opacity = "0";
-        overlay.style.transition = "opacity 0.3s ease-in-out";
+    async function handleButtonClick() {
+        const res = await utils.getInfo();
+        const overlay = createOverlay();
+        const content = createContent();
+        const panelContainer = createPanelContainer();
+        const panels = await createPanels(res);
+        const tabs = createTabs(panelContainer, panels);
 
-        let content = document.createElement("div");
-        content.style.backgroundColor = "white";
-        content.style.padding = "30px";
-        content.style.borderRadius = "15px";
-        content.style.boxShadow = "0px 0px 15px rgba(0, 0, 0, 0.3)";
-        content.style.width = "90%";
-        content.style.height = "60%";
-        content.style.maxWidth = "1000px";
-        content.style.maxHeight = "100vh";
-        content.style.overflowY = "auto";
-        content.style.position = "relative";
-        content.style.opacity = "0";
-        content.style.transform = "translateY(-20px)";
-        content.style.transition = "opacity 0.3s ease-in-out, transform 0.3s ease-in-out";
-
-        let closeButton = document.createElement("span");
-        closeButton.innerHTML = "&times;";
-        closeButton.style.position = "absolute";
-        closeButton.style.top = "10px";
-        closeButton.style.right = "15px";
-        closeButton.style.fontSize = "24px";
-        closeButton.style.cursor = "pointer";
-        closeButton.style.color = "#ff4d4d";
-        closeButton.style.fontWeight = "bold";
-
-        closeButton.onmouseover = () => {
-            closeButton.style.color = "red";
-        };
-        closeButton.onmouseout = () => {
-            closeButton.style.color = "#ff4d4d";
-        };
-
-        function closeOverlay() {
-            overlay.style.opacity = "0";
-            content.style.opacity = "0";
-            content.style.transform = "translateY(-20px)";
-            setTimeout(() => overlay.remove(), 300);
-        }
-
-        closeButton.onclick = closeOverlay;
-        overlay.onclick = (e) => {
-            if (e.target === overlay) closeOverlay();
-        };
-
-        content.appendChild(closeButton);
+        panelContainer.appendChild(panels[0]);
+        content.appendChild(createCloseButton(overlay, content));
+        content.appendChild(tabs);
+        content.appendChild(panelContainer);
         overlay.appendChild(content);
         document.body.appendChild(overlay);
 
@@ -71,42 +23,287 @@
         }, 10);
     }
 
+    function createOverlay() {
+        const overlay = document.createElement("div");
+        overlay.id = "overlay";
+        Object.assign(overlay.style, {
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100%",
+            height: "108%",
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: "9999",
+            opacity: "0",
+            transition: "opacity 0.3s ease-in-out"
+        });
+        return overlay;
+    }
+
+    function createContent() {
+        const content = document.createElement("div");
+        content.id = "content";
+        Object.assign(content.style, {
+            backgroundColor: "white",
+            padding: "30px",
+            borderRadius: "15px",
+            boxShadow: "0px 0px 15px rgba(0, 0, 0, 0.3)",
+            width: "1200px",
+            height: "700px",
+            maxWidth: "100%",
+            maxHeight: "85%",
+            overflowY: "auto",
+            position: "relative",
+            opacity: "0",
+            transform: "translateY(-20px)",
+            transition: "opacity 0.3s ease-in-out, transform 0.3s ease-in-out",
+            display: "flex",
+            flexDirection: "column"
+        });
+        return content;
+    }
+
+    function createTabs(panelContainer, panels) {
+        const tabs = document.createElement("div");
+        tabs.id = "tabs";
+        Object.assign(tabs.style, {
+            display: "flex",
+            justifyContent: "space-around",
+            marginBottom: "10px",
+            borderBottom: "2px solid #ddd"
+        });
+
+        const tabNames = ["Tổng quan", "Điểm theo học kỳ", "Điểm theo năm"];
+        const tabButtons = [];
+
+        tabNames.forEach((name, index) => {
+            const tab = document.createElement("button");
+            tab.className = "tab-button";
+            tab.innerText = name;
+            Object.assign(tab.style, {
+                padding: "10px 15px",
+                border: "none",
+                backgroundColor: index === 0 ? "#007bff" : "transparent",
+                color: index === 0 ? "white" : "#333",
+                cursor: "pointer",
+                flex: "1",
+                fontWeight: "bold",
+                borderRadius: "5px 5px 0 0"
+            });
+
+            tab.onclick = () => {
+                tabButtons.forEach((btn, i) => {
+                    btn.style.backgroundColor = i === index ? "#007bff" : "transparent";
+                    btn.style.color = i === index ? "white" : "#333";
+                });
+                panelContainer.innerHTML = "";
+                panelContainer.appendChild(panels[index]);
+            };
+
+            tabButtons.push(tab);
+            tabs.appendChild(tab);
+        });
+
+        return tabs;
+    }
+
+    function createPanelContainer() {
+        const panelContainer = document.createElement("div");
+        panelContainer.id = "panel-container";
+        Object.assign(panelContainer.style, {
+            flex: "1",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column"
+        });
+        return panelContainer;
+    }
+
+    async function createPanels(res) {
+        const panels = [];
+        const container = document.createElement("div");
+        container.className = "panel-container";
+        container.style.width = "100%";
+
+        const header = document.createElement("div");
+        header.className = "panel-header";
+        header.style.textAlign = "center";
+        header.style.marginBottom = "20px";
+        header.innerHTML = `<h3 style="color: #007bff;">Tổng quan sinh viên</h3>`;
+
+        const overviewPanel = await createOverviewPanel(res);
+        container.appendChild(header);
+        container.appendChild(overviewPanel);
+        panels.push(container);
+
+        const semesterPanel = document.createElement("div");
+        semesterPanel.className = "panel";
+        semesterPanel.innerHTML = `<p style="color: gray; text-align: center;">(Chưa có nội dung)</p>`;
+        panels.push(semesterPanel);
+
+        const yearPanel = document.createElement("div");
+        yearPanel.className = "panel";
+        yearPanel.innerHTML = `<p style="color: gray; text-align: center;">(Chưa có nội dung)</p>`;
+        panels.push(yearPanel);
+
+        return panels;
+    }
+
+    async function createOverviewPanel(res) {
+        const overviewPanel = document.createElement("div");
+        overviewPanel.className = "overview-panel";
+        Object.assign(overviewPanel.style, {
+            display: "flex",
+            flexDirection: "row",
+            gap: "20px",
+            alignItems: "stretch"
+        });
+
+        const leftPanel = createLeftPanel(res);
+        const rightPanel = createRightPanel(res);
+
+        overviewPanel.appendChild(leftPanel);
+        overviewPanel.appendChild(rightPanel);
+
+        return overviewPanel;
+    }
+
+    function createLeftPanel(res) {
+        const leftPanel = document.createElement("div");
+        leftPanel.id = "left-panel";
+        Object.assign(leftPanel.style, {
+            width: "50%",
+            padding: "20px",
+            backgroundColor: "#ffffff",
+            borderRadius: "12px",
+            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+            border: "1px solid #ddd"
+        });
+
+        leftPanel.innerHTML = `
+                <h4 style="margin-bottom: 15px; text-align: center; color: #007bff;">Thông tin sinh viên</h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 16px;">
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Họ và tên</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.fullname || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Khóa học</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.admissionCourse || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Ngành học</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.fieldOfStudy || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Tổng tín chỉ</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.totalCredits || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">ĐTB hệ 4:</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.GPA4 || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">ĐTB hệ 10:</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.GPA10 || "N/A"}</td></tr>
+                    <tr><td style="padding: 10px; border-bottom: 1px solid #eee; font-weight: bold; color: #333;">Học lực:</td><td style="padding: 10px; border-bottom: 1px solid #eee; color: #555;">${res.academicPerformance || "N/A"}</td></tr>
+                    <tr>
+                        <td colspan="2" style="padding: 10px; font-weight: bold; text-align: center; color: #333;">Bảng điểm</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="padding: 10px; text-align: center;">
+                            <span style="color: #28a745; font-weight: bold;">A: ${res.gradesCount.A ?? "N/A"}</span> |
+                            <span style="color: #007bff; font-weight: bold;">B: ${res.gradesCount.B ?? "N/A"}</span> |
+                            <span style="color: #ffc107; font-weight: bold;">C: ${res.gradesCount.C ?? "N/A"}</span> |
+                            <span style="color: #dc3545; font-weight: bold;">D: ${res.gradesCount.D ?? "N/A"}</span> |
+                            <span style="color: #bb35dc; font-weight: bold;">F: ${res.gradesCount.F ?? "N/A"}</span>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        return leftPanel;
+    }
+
+    function createRightPanel() {
+        const rightPanel = document.createElement("div");
+        rightPanel.id = "right-panel";
+        Object.assign(rightPanel.style, {
+            width: "50%",
+            padding: "20px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "12px",
+            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)"
+        });
+
+        rightPanel.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center;">
+                <h4 style="margin-bottom: 15px; text-align: center; color: #007bff;">Biểu đồ thống kê</h4>
+                <canvas id="gradesChart" width="300" height="300"></canvas>
+            </div>
+        `;
+
+        return rightPanel;
+    }
+
+    function createCloseButton(overlay, content) {
+        const closeButton = document.createElement("span");
+        closeButton.id = "close-button";
+        closeButton.innerHTML = "&times;";
+        Object.assign(closeButton.style, {
+            position: "absolute",
+            top: "10px",
+            right: "15px",
+            fontSize: "24px",
+            cursor: "pointer",
+            color: "#ff4d4d",
+            fontWeight: "bold"
+        });
+
+        closeButton.onclick = () => {
+            overlay.style.opacity = "0";
+            content.style.opacity = "0";
+            content.style.transform = "translateY(-20px)";
+            setTimeout(() => overlay.remove(), 300);
+        };
+
+        overlay.onclick = (e) => {
+            if (e.target === overlay) closeButton.onclick();
+        };
+
+        return closeButton;
+    }
+
     const style = document.createElement("style");
     style.innerHTML = `
-        .btn-export {
-            width: 50px; 
-            height: 50px;
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
-            white-space: nowrap; 
-        }
+            .btn-statistic {
+                width: 50px; 
+                height: 50px;
+                padding: 10px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                transition: width 0.3s ease-in-out, padding 0.3s ease-in-out;
+                white-space: nowrap; 
+            }
 
-        .btn-export:hover {
-            width: 180px; 
-            padding: 10px 15px;
-        }
+            .btn-statistic:hover {
+                width: 180px; 
+                padding: 10px 15px;
+            }
 
-        .btn-export span {
-            display: none; 
-        }
+            .btn-statistic span {
+                display: none; 
+            }
 
-        .btn-export:hover span {
-            display: inline; 
-        }
+            .btn-statistic:hover span {
+                display: inline; 
+            }
 
-        .btn-export:hover svg {
-            display: none;    
-        }
-    `;
+            .btn-statistic:hover svg {
+                display: none;    
+            }
+
+            .legend {
+                text-align: center;
+                margin-top: 10px;
+                font-weight: bold;
+            }
+        `;
 
     function addButtonStatistic() {
         document.head.appendChild(style);
 
         const button = document.createElement("button");
-        button.classList.add("btn-export");
+        button.classList.add("btn-statistic");
 
         button.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
@@ -115,23 +312,24 @@
         <span>Statistics</span>
     `;
 
-        button.style.position = "fixed";
-        button.style.top = "50%";
-        button.style.right = "0px";
-        button.style.transform = "translateY(-50%)";
-        button.style.overflow = "hidden";
-        button.style.background = "#007bff";
-        button.style.color = "white";
-        button.style.border = "none";
-        button.style.borderRadius = "5px 0 0 5px";
-        button.style.cursor = "pointer";
-        button.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
-        button.style.zIndex = "9999";
-        button.style.fontSize = "16px";
-
-        button.style.display = "flex";
-        button.style.alignItems = "center";
-        button.style.justifyContent = "center";
+        Object.assign(button.style, {
+            position: "fixed",
+            top: "50%",
+            right: "0px",
+            transform: "translateY(-50%)",
+            overflow: "hidden",
+            background: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "5px 0 0 5px",
+            cursor: "pointer",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            zIndex: "9999",
+            fontSize: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+        });
 
         document.body.appendChild(button);
 
