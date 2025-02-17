@@ -32,7 +32,8 @@ export async function getInfo() {
     let GPA10 = 0;
 
     let gradesCount = { A: 0, B: 0, C: 0, D: 0, F: 0 };
-    doc.querySelectorAll("tr").forEach(async row => {
+    const rows = doc.querySelectorAll("tr");
+    for (const row of rows) {
         let ceil = row.querySelectorAll("td.text-center");
         if (ceil.length >= 6) {
             let score = parseFloat(ceil[4].textContent.trim());
@@ -46,7 +47,7 @@ export async function getInfo() {
                     GPA10 += (score * credit);
             }
         }
-    })
+    }
 
     GPA10 = Math.round((GPA10 / totalCredits) * 100) / 100;
     

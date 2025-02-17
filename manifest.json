@@ -35,8 +35,7 @@
         {
             "resources": [
                 "scripts/utils.js",
-                "scripts/chart.js",
-                "scripts/chart.min.js"
+                "scripts/libs/Chart.min.js"
             ],
             "matches": [
                 "*://student.husc.edu.vn/*"
@@ -51,8 +50,5 @@
     ],
     "host_permissions": [
         "*://student.husc.edu.vn/*"
-    ],
-    "content_security_policy": {
-        "extension_pages": "script-src 'self'; object-src 'self'"
-    }
+    ]
 }
