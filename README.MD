@@ -4,5 +4,5 @@
 
 ### Features
 - [x] Export shecdule to ICS file.
-- [ ] Statistics History Of Studying.
+- [x] Statistics History Of Studying.
 - [x] Detail cources.
