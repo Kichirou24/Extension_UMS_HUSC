@@ -50,7 +50,7 @@ export async function getInfo() {
     }
 
     GPA10 = Math.round((GPA10 / totalCredits) * 100) / 100;
-    
+
     let academicPerformance = await convertAcademicPerformance(GPA4);
     res = { fullname: fullname, admissionCourse: admissionCourse, fieldOfStudy: fieldOfStudy, totalCredits: totalCredits, GPA4: GPA4, GPA10: GPA10, gradesCount: gradesCount, academicPerformance: academicPerformance };
     return res;
@@ -142,4 +142,112 @@ export async function caclScorePass(data, scoreExam) {
     };
 
     return scorePass;
+}
+
+function extractSemester(text) {
+    const match = text.match(/Học kỳ: (\d+) - Năm học: (\d{4}-\d{4})/);
+    if (match) {
+        const semester = match[1];
+        const year = match[2];
+        return `${year}.${semester}`;
+    }
+    return null;
+}
+
+function extractYear(text) {
+    const match = text.match(/Học kỳ: (\d+) - Năm học: (\d{4}-\d{4})/);
+    if (match) {
+        const year = match[2];
+        return `${year}`;
+    }
+    return null;
+}
+
+async function extractGrades() {
+    const semesters = [];
+
+    const rows = document.querySelectorAll("tbody tr");
+
+    let curSemester = null;
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length === 2 && cells[0].colSpan === 4) {
+            curSemester = {
+                semester: extractSemester(cells[0].innerText.trim()),
+                year: extractYear(cells[0].innerText.trim()),
+                courses: []
+            };
+            semesters.push(curSemester);
+        }
+        else if (cells.length === 10 && curSemester) {
+            const course = {
+                id: cells[0].innerText.trim(),
+                name: cells[1].innerText.trim(),
+                credit: parseFloat(cells[3].innerText.trim()),
+                score: parseFloat(cells[7].innerText.trim()) || 0
+            }
+            curSemester.courses.push(course);
+        }
+    })
+
+    return semesters;
+}
+
+export async function caclSemestersGPA() {
+    const semesters = await extractGrades();
+
+    semesters.forEach(semester => {
+        let semesterCredits = 0;
+        let semesterPoints = 0;
+
+        semester.courses.forEach(course => {
+            if (course.score >= 4.0) {
+                semesterCredits += course.credit;
+                semesterPoints += course.credit * course.score;
+            }
+        });
+
+        semester.GPA10Semester = Math.round((semesterPoints / semesterCredits) * 100) / 100 || 0;
+    });
+
+    return semesters;
+}
+
+export async function caclYearsGPA() {
+    const semesters = await extractGrades();
+
+    const years = {};
+
+    semesters.forEach(semester => {
+        if (!years[semester.year]) {
+            years[semester.year] = {
+                semesters: [],
+                GPA10Year: 0
+            };
+        }
+
+        years[semester.year].semesters.push(semester);
+    });
+
+    const result = [];
+
+    for (const year in years) {
+        let yearCredits = 0;
+        let yearPoints = 0;
+
+        years[year].semesters.forEach(semester => {
+            semester.courses.forEach(course => {
+                if (course.score >= 4.0) {
+                    yearCredits += course.credit;
+                    yearPoints += course.credit * course.score;
+                }
+            });
+        });
+
+        years[year].GPA10Year = Math.round((yearPoints / yearCredits) * 100) / 100 || 0;
+        result.push({ year, GPA10Year: years[year].GPA10Year });
+    }
+
+    return result;
 }

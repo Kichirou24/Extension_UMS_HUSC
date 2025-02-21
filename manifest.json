@@ -23,7 +23,8 @@
             ],
             "js": [
                 "scripts/content_statistic.js",
-                "scripts/content_detail.js"
+                "scripts/content_detail.js",
+                "scripts/libs/Chart.min.js"
             ],
             "css": [
                 "styles/bootstrap-icons.css"
@@ -35,7 +36,10 @@
         {
             "resources": [
                 "scripts/utils.js",
-                "scripts/libs/Chart.min.js"
+                "scripts/libs/Chart.js",
+                "scripts/libs/Chart.min.js",
+                "scripts/libs/chart.umd.js",
+                "scripts/libs/loader.js"
             ],
             "matches": [
                 "*://student.husc.edu.vn/*"
@@ -50,5 +54,8 @@
     ],
     "host_permissions": [
         "*://student.husc.edu.vn/*"
-    ]
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    }
 }
