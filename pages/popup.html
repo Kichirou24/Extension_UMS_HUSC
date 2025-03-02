@@ -9,11 +9,22 @@
 </head>
 
 <body>
-    <h3>Nhập thông tin tài khoản</h3>
-    <input type="text" id="username" placeholder="Tài khoản">
-    <input type="password" id="password" placeholder="Mật khẩu">
-    <button id="save">Lưu</button>
-    <p id="status">Đã lưu thành công!</p>
+    <div class="header">
+        <span id="username-display">Login</span>
+        <div id="logout-dropdown" class="hidden">Đăng xuất</div>
+    </div>
+
+    <div id="login-form" class="hidden">
+        <h3>Nhập thông tin tài khoản</h3>
+        <input type="text" id="username" placeholder="Tài khoản">
+        <input type="password" id="password" placeholder="Mật khẩu">
+        <button id="save">Đăng nhập</button>
+        <p id="status"></p>
+    </div>
+
+    <h3 id="mail-title">Hộp thư chưa đọc</h3>
+    <ul id="mail-list">Đang tải...</ul>
+
     <script src="../scripts/popup.js"></script>
 </body>
 

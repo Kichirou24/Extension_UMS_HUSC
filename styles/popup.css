@@ -1,14 +1,78 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    width: 300px;
+    width: 400px;
+    height: 450px;
     padding: 20px;
     background: #f9f9f9;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
 }
 
+.header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    color: #007bff;
+    transition: color 0.3s;
+    position: relative;
+}
+
+.header:hover {
+    color: #0056b3;
+}
+
+#username-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+#username-display {
+    padding: 5px 15px;
+    border-radius: 8px;
+    background: #007bff;
+    color: white;
+    transition: background 0.3s;
+}
+
+#username-display.logged-in {
+    cursor: pointer;
+}
+
+#username-display:hover {
+    background: #0056b3;
+}
+
+#logout-dropdown {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background: white;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    font-weight: bold;
+    color: #d9534f;
+    transition: all 0.3s ease;
+    border: 1px solid #d9534f;
+    width: 70px;
+    text-align: center;
+    z-index: 100;
+}
+
+#logout-dropdown:hover {
+    background: #d9534f;
+    color: white;
+}
+
+.hidden {
+    display: none;
+}
+
 input {
-    width: 280px;
+    width: calc(100% - 20px);
     padding: 10px;
     margin: 10px 0;
     border: 1px solid #ddd;
@@ -23,7 +87,7 @@ input:focus {
 }
 
 button {
-    width: 100px;
+    width: 100%;
     padding: 10px;
     background: #007bff;
     color: white;
@@ -32,8 +96,7 @@ button {
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: background 0.3s, transform 0.3s;
-    display: block;
-    margin: 0 auto;
+    margin-top: 10px;
 }
 
 button:hover {
@@ -41,11 +104,50 @@ button:hover {
     transform: translateY(-2px);
 }
 
+
 #status {
-    margin-top: 15px;
-    color: green;
+    margin-top: 10px;
     text-align: center;
+    font-size: 14px;
     display: none;
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
+}
+
+#status.success {
+    color: green;
+}
+
+#status.error {
+    color: red;
+}
+
+#mail-title, #mail-list {
+    display: none;
+}
+
+#mail-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 15px;
+}
+
+#mail-list li {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    transition: background 0.3s;
+}
+
+#mail-list li:hover {
+    background: #f1f1f1;
+}
+
+#mail-list a {
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+}
+
+#mail-list a:hover {
+    color: #007bff;
 }
