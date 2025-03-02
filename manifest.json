@@ -8,7 +8,18 @@
         "48": "icons/icon48.png",
         "128": "icons/icon128.png"
     },
+    "action": {
+        "default_popup": "pages/popup.html"
+    },
     "content_scripts": [
+        {
+            "matches": [
+                "*://student.husc.edu.vn/Account/Login"
+            ],
+            "js": [
+                "scripts/content_login.js"
+            ]
+        },
         {
             "matches": [
                 "*://student.husc.edu.vn/TimeTable"
@@ -36,10 +47,7 @@
         {
             "resources": [
                 "scripts/utils.js",
-                "scripts/libs/Chart.js",
-                "scripts/libs/Chart.min.js",
-                "scripts/libs/chart.umd.js",
-                "scripts/libs/loader.js"
+                "scripts/libs/Chart.min.js"
             ],
             "matches": [
                 "*://student.husc.edu.vn/*"
