@@ -1,6 +1,5 @@
 // Function export ICS
 function exportToICS() {
-    const nameFile = prompt("Enter the name of the file", "Schedule");
 
     function convertStartTime(period) {
         const periodMap = {
@@ -188,7 +187,6 @@ function exportToICS() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${nameFile}.ics`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -197,7 +195,7 @@ function exportToICS() {
 // Create button 'Export to ICS'
 const style = document.createElement("style");
 style.innerHTML = `
-    .btn-export {
+    .btn-export-ics {
         width: 50px; 
         height: 50px;
         padding: 10px;
@@ -208,20 +206,20 @@ style.innerHTML = `
         white-space: nowrap; 
     }
 
-    .btn-export:hover {
+    .btn-export-ics:hover {
         width: 180px; 
         padding: 10px 15px;
     }
 
-    .btn-export span {
+    .btn-export-ics span {
         display: none; 
     }
 
-    .btn-export:hover span {
+    .btn-export-ics:hover span {
         display: inline; 
     }
 
-    .btn-export:hover svg {
+    .btn-export-ics:hover svg {
         display: none;    
     }
 `;
@@ -229,7 +227,7 @@ style.innerHTML = `
 document.head.appendChild(style);
 
 const button = document.createElement("button");
-button.classList.add("btn-export");
+button.classList.add("btn-export-ics");
 
 button.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
