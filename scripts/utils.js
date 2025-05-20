@@ -1,13 +1,12 @@
-// Grade conversion
-function convertScore(score) {
+// --- Grade Conversion ---
+export function convertScore(score) {
     if (score >= 8.5) return 'A';
     if (score >= 7.0) return 'B';
     if (score >= 5.5) return 'C';
     if (score >= 4.0) return 'D';
     return 'F';
 }
-
-function convertAcademicPerformance(GPA4) {
+export function convertAcademicPerformance(GPA4) {
     if (GPA4 >= 3.6) return 'Xuất sắc';
     if (GPA4 >= 3.2) return 'Giỏi';
     if (GPA4 >= 2.5) return 'Khá';
@@ -15,27 +14,22 @@ function convertAcademicPerformance(GPA4) {
     return 'Yếu';
 }
 
-// Main info fetcher
+// --- DOM Helpers ---
+const parseHTML = html => new DOMParser().parseFromString(html, "text/html");
+const getText = (doc, selector) => doc.querySelector(selector)?.textContent.trim() || "";
+
+// --- Main Info Fetcher ---
 export async function getInfo() {
-    const res = {};
-    const response = await fetch(`https://student.husc.edu.vn/Statistics/StudyResult/`);
-    const data = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data, "text/html");
-
-    const getText = selector => doc.querySelector(selector)?.textContent.trim() || "";
-
-    const admissionCourse = getText("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(1) > div > p");
-    const fieldOfStudy = getText("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(2) > div > p");
-    const totalCredits = parseFloat(getText("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(4) > div.col-xs-2 > p").replace(",", "."));
-    const fullname = getText("#wrapper > div.panel-sidebar-left > div > div.hitec-information > h5");
-    let GPA4 = parseFloat(getText("#wrapper > div.panel-main-content > div > div > div > div.container-fluid.form-horizontal > div:nth-child(4) > div.col-xs-3 > p").replace(",", "."));
-
-    let GPA10 = 0;
-    const gradesCount = { A: 0, B: 0, C: 0, D: 0, F: 0 };
-    const rows = doc.querySelectorAll("tr");
-
-    for (const row of rows) {
+    const doc = parseHTML(await (await fetch("https://student.husc.edu.vn/Statistics/StudyResult/")).text());
+    const res = {
+        fullname: getText(doc, "#wrapper .panel-sidebar-left .hitec-information > h5"),
+        admissionCourse: getText(doc, "#wrapper .panel-main-content .container-fluid.form-horizontal > div:nth-child(1) > div > p"),
+        fieldOfStudy: getText(doc, "#wrapper .panel-main-content .container-fluid.form-horizontal > div:nth-child(2) > div > p"),
+        totalCredits: parseFloat(getText(doc, "#wrapper .panel-main-content .container-fluid.form-horizontal > div:nth-child(4) > div.col-xs-2 > p").replace(",", ".")),
+        GPA4: parseFloat(getText(doc, "#wrapper .panel-main-content .container-fluid.form-horizontal > div:nth-child(4) > div.col-xs-3 > p").replace(",", "."))
+    };
+    let GPA10 = 0, gradesCount = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+    doc.querySelectorAll("tr").forEach(row => {
         const cells = row.querySelectorAll("td.text-center");
         if (cells.length >= 6) {
             const score = parseFloat(cells[4].textContent.trim());
@@ -43,79 +37,52 @@ export async function getInfo() {
             if (!isNaN(score)) {
                 const grade = convertScore(score);
                 gradesCount[grade]++;
-                if (grade !== 'F') GPA10 += (score * credit);
+                if (grade !== 'F') GPA10 += score * credit;
             }
         }
-    }
-
-    GPA10 = Math.round((GPA10 / totalCredits) * 100) / 100;
-    const academicPerformance = convertAcademicPerformance(GPA4);
-
-    return { fullname, admissionCourse, fieldOfStudy, totalCredits, GPA4, GPA10, gradesCount, academicPerformance };
+    });
+    res.GPA10 = Math.round((GPA10 / res.totalCredits) * 100) / 100;
+    res.gradesCount = gradesCount;
+    res.academicPerformance = convertAcademicPerformance(res.GPA4);
+    return res;
 }
 
-// Course info fetcher
+// --- Course Info Fetchers ---
 export async function getInfoCourse(courseId, scoreExam) {
-    const response = await fetch(`${courseId}`);
-    const data = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data, "text/html");
-
+    const doc = parseHTML(await (await fetch(courseId)).text());
     const findFieldset = label =>
         Array.from(doc.querySelectorAll("fieldset legend"))
             .find(legend => legend.textContent.trim().includes(label))
             ?.parentElement.outerHTML || "";
-
-    const infoGeneral = findFieldset("Thông tin chung");
-    const evaluationResults = findFieldset("Kết quả đánh giá quá trình học tập");
-    const scoringMethod = findFieldset("Cách đánh giá điểm quá trình học");
-
-    const scorePass = await caclScorePass(doc, scoreExam);
-
-    return { infoGeneral, evaluationResults, scoringMethod, scorePass };
+    return {
+        infoGeneral: findFieldset("Thông tin chung"),
+        evaluationResults: findFieldset("Kết quả đánh giá quá trình học tập"),
+        scoringMethod: findFieldset("Cách đánh giá điểm quá trình học"),
+        scorePass: await caclScorePass(doc, scoreExam)
+    };
 }
-
-// Course info extraction
-
 export async function getInfoCourseGeneral(courseId) {
-    const response = await fetch(`https://student.husc.edu.vn${courseId}`);
-    const data = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data, "text/html");
-
-    const findFieldset = label =>
-        Array.from(doc.querySelectorAll("fieldset legend"))
-            .find(legend => legend.textContent.trim().includes(label))
-            ?.parentElement.outerHTML || "";
-
-    const scoringMethod = findFieldset("Cách đánh giá điểm quá trình học");
-
+    const doc = parseHTML(await (await fetch(`https://student.husc.edu.vn${courseId}`)).text());
+    const scoringMethod = Array.from(doc.querySelectorAll("fieldset legend"))
+        .find(legend => legend.textContent.trim().includes("Cách đánh giá điểm quá trình học"))
+        ?.parentElement.outerHTML || "";
     let qtht = 0, thi = 0;
-
     const ratioMatch = scoringMethod.match(/QTHT\s*x\s*(\d+)%\s*\+\s*Điểm thi\s*x\s*(\d+)%/i);
     if (ratioMatch) {
         qtht = parseInt(ratioMatch[1], 10) / 100;
         thi = parseInt(ratioMatch[2], 10) / 100;
     }
-
-    return {
-        qtht: qtht,
-        thi: thi,
-    }
+    return { qtht, thi };
 }
 
-// Score extraction
+// --- Score Extraction ---
 export async function getScore(data) {
     const table = data.querySelector("fieldset table");
     if (!table) return;
-
     const headers = table.querySelectorAll("thead th");
-    const rows = table.querySelectorAll("tbody tr");
     const dataScore = [];
-
-    rows.forEach(row => {
-        const cells = row.querySelectorAll("td.text-center");
-        cells.forEach((cell, index) => {
+    table.querySelectorAll("tbody tr").forEach(row => {
+        row.querySelectorAll("td.text-center").forEach((cell, index) => {
             const score = parseFloat(cell.textContent) || 0;
             const percentMatch = headers[index]?.innerHTML.match(/\((\d+)%\)/);
             if (percentMatch) {
@@ -126,25 +93,20 @@ export async function getScore(data) {
             }
         });
     });
-
-    if (dataScore.length === 0) return 404;
-    return dataScore;
+    return dataScore.length === 0 ? 404 : dataScore;
 }
 
-// Calculate passing scores
+// --- Calculate Passing Scores ---
 export async function caclScorePass(data, scoreExam) {
     const dataScore = await getScore(data);
     if (dataScore === 404) return 404;
-
     let qthtScore4 = 0, totalPercent = 0;
     dataScore.forEach(item => {
         qthtScore4 += item.score * item.percent;
         totalPercent += item.percent;
     });
     const qthtScore10 = qthtScore4 / totalPercent;
-
     const calcPass = target => Math.max(0, Math.round(((target - qthtScore10 * totalPercent) / (1 - totalPercent)) * 4) / 4);
-
     return {
         A: calcPass(8.5),
         B: calcPass(7.0),
@@ -153,24 +115,21 @@ export async function caclScorePass(data, scoreExam) {
     };
 }
 
-// Semester/year extraction helpers
-function extractSemester(text) {
+// --- Semester/Year Extraction Helpers ---
+const extractSemester = text => {
     const match = text.match(/Học kỳ: (\d+) - Năm học: (\d{4}-\d{4})/);
     return match ? `${match[2]}.${match[1]}` : null;
-}
-
-function extractYear(text) {
+};
+const extractYear = text => {
     const match = text.match(/Học kỳ: (\d+) - Năm học: (\d{4}-\d{4})/);
     return match ? match[2] : null;
-}
+};
 
-// Extract grades by semester
+// --- Extract Grades by Semester ---
 async function extractGrades() {
     const semesters = [];
-    const rows = document.querySelectorAll("tbody tr");
     let curSemester = null;
-
-    rows.forEach(row => {
+    document.querySelectorAll("tbody tr").forEach(row => {
         const cells = row.querySelectorAll("td");
         if (cells.length === 2 && cells[0].colSpan === 4) {
             curSemester = {
@@ -188,11 +147,10 @@ async function extractGrades() {
             });
         }
     });
-
     return semesters;
 }
 
-// Calculate GPA per semester
+// --- Calculate GPA per Semester ---
 export async function caclSemestersGPA() {
     const semesters = await extractGrades();
     semesters.forEach(semester => {
@@ -208,18 +166,14 @@ export async function caclSemestersGPA() {
     return semesters;
 }
 
-// Calculate GPA per year
+// --- Calculate GPA per Year ---
 export async function caclYearsGPA() {
     const semesters = await extractGrades();
     const years = {};
-
     semesters.forEach(semester => {
-        if (!years[semester.year]) {
-            years[semester.year] = { semesters: [], GPA10Year: 0 };
-        }
+        if (!years[semester.year]) years[semester.year] = { semesters: [], GPA10Year: 0 };
         years[semester.year].semesters.push(semester);
     });
-
     return Object.entries(years).map(([year, data]) => {
         let yearCredits = 0, yearPoints = 0;
         data.semesters.forEach(semester => {
