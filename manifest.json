@@ -11,14 +11,6 @@
     "content_scripts": [
         {
             "matches": [
-                "*://student.husc.edu.vn/Account/Login"
-            ],
-            "js": [
-                "scripts/content_login.js"
-            ]
-        },
-        {
-            "matches": [
                 "*://student.husc.edu.vn/TimeTable"
             ],
             "js": [
@@ -31,6 +23,7 @@
             ],
             "js": [
                 "scripts/content_statistic.js",
+                "scripts/content_calcScoreAvg.js",
                 "scripts/content_detail.js",
                 "scripts/libs/Chart.min.js"
             ],
