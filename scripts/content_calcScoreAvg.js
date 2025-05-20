@@ -31,17 +31,30 @@
     // --- GPA Calculation ---
     function updateGPA() {
         let totalScore10 = 0, totalScore4 = 0, totalCredits = 0;
+        const courseRowMap = new Map();
+
         document.querySelectorAll("tr").forEach(row => {
             const cells = row.querySelectorAll("td.text-center");
             if (cells.length < 7) return;
+
+            const courseCode = cells[1].textContent.trim();
+            courseRowMap.set(courseCode, row);
+        });
+
+        courseRowMap.forEach((row, courseCode) => {
+            const cells = row.querySelectorAll("td.text-center");
+            if (cells.length < 7) return;
+
             const avg = parseFloat(cells[6].textContent.trim());
-            const credits = parseInt(cells[2].textContent.trim());
+            const credits = parseFloat(cells[2].textContent.trim());
+
             if (!isNaN(avg) && !isNaN(credits)) {
                 totalScore10 += avg * credits;
                 totalScore4 += convertScore10to4(avg) * credits;
                 totalCredits += credits;
             }
         });
+
         const gpa10Display = document.getElementById("gpa10Display");
         const gpa4Display = document.getElementById("gpa4Display");
         if (gpa10Display && gpa4Display) {
@@ -59,10 +72,22 @@
 
     // --- Add Editable Fields and Logic ---
     async function addFieldInput() {
+        const courseRowMap = new Map();
+
         document.querySelectorAll("tr").forEach(row => {
             const cells = row.querySelectorAll("td.text-center");
             if (cells.length < 7) return;
+
+            const courseCode = cells[1].textContent.trim();
+            courseRowMap.set(courseCode, row);
+        });
+
+        for (const [courseCode, row] of courseRowMap) {
+            const cells = row.querySelectorAll("td.text-center");
+            const courseId = row.querySelector("a[href^='/Course/Details/']")?.href;
+            if (cells.length < 7) continue;
             const inputFields = [];
+
             for (let i = 4; i <= 5; i++) {
                 const cell = cells[i];
                 if (!cell || cell.querySelector("input")) continue;
@@ -81,9 +106,7 @@
                 cell.appendChild(input);
                 inputFields[i] = input;
             }
-            const courseLink = row.querySelector('a[href^="/Course/Details/"]');
-            if (!courseLink) return;
-            const courseId = courseLink.getAttribute("href");
+
             const handleInput = async () => {
                 const scoreProcess = parseFloat(inputFields[4]?.value);
                 const scoreExam = parseFloat(inputFields[5]?.value);
@@ -101,18 +124,19 @@
                     }
                 }
             };
+
             inputFields.forEach(input => input && input.addEventListener("input", handleInput));
             if (inputFields[4]?.value && inputFields[5]?.value) handleInput();
-        });
+        }
 
-        // Style for number input (only add once)
+        // Style cho input
         if (!document.getElementById("gpa10Display")) {
             const style = document.createElement('style');
             style.textContent = `
-                input[type=number]::-webkit-inner-spin-button, 
-                input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-                input[type=number] { -moz-appearance: textfield; }
-            `;
+            input[type=number]::-webkit-inner-spin-button, 
+            input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+            input[type=number] { -moz-appearance: textfield; }
+        `;
             document.head.appendChild(style);
         }
 

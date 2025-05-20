@@ -62,7 +62,7 @@ export async function getInfoCourse(courseId, scoreExam) {
     };
 }
 export async function getInfoCourseGeneral(courseId) {
-    const doc = parseHTML(await (await fetch(`https://student.husc.edu.vn${courseId}`)).text());
+    const doc = parseHTML(await (await fetch(`${courseId}`)).text());
     const scoringMethod = Array.from(doc.querySelectorAll("fieldset legend"))
         .find(legend => legend.textContent.trim().includes("Cách đánh giá điểm quá trình học"))
         ?.parentElement.outerHTML || "";
