@@ -23,6 +23,7 @@
             ],
             "js": [
                 "scripts/content_statistic.js",
+                "scripts/content_calcScoreAvg.js",
                 "scripts/content_detail.js",
                 "scripts/libs/Chart.min.js"
             ],
@@ -36,10 +37,7 @@
         {
             "resources": [
                 "scripts/utils.js",
-                "scripts/libs/Chart.js",
-                "scripts/libs/Chart.min.js",
-                "scripts/libs/chart.umd.js",
-                "scripts/libs/loader.js"
+                "scripts/libs/Chart.min.js"
             ],
             "matches": [
                 "*://student.husc.edu.vn/*"
