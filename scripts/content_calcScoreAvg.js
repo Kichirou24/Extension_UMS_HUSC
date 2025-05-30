@@ -7,6 +7,64 @@
     const convertAcademicPerformance = GPA4 =>
         GPA4 >= 3.6 ? 'Xuất sắc' : GPA4 >= 3.2 ? 'Giỏi' : GPA4 >= 2.5 ? 'Khá' : GPA4 >= 2.0 ? 'Trung bình' : 'Yếu';
 
+    // --- Helper: convert score to color ---
+    function getColor(score) {
+        switch (score) {
+            case 'A': return "#28a745";
+            case 'B': return "#007bff";
+            case 'C': return "#ffc107";
+            case 'D': return "#dc3545";
+            case 'F': return "#bb35dc";
+            default: return "#6c757d";
+        }
+    }
+
+    // --- Add/Update "Điểm chữ" column ---
+    function updateMarkColumn() {
+        // Add header if not exists
+        const theadRows = document.querySelectorAll("table thead tr");
+        if (theadRows.length === 2 && !theadRows[1].querySelector("th.diem-chu-th")) {
+            const tongDiem1Index = Array.from(theadRows[1].children).findIndex(th => th.textContent.trim() === "Tổng điểm");
+            if (tongDiem1Index !== -1) {
+                const thiLan1Th = Array.from(theadRows[0].children).find(th => th.textContent.includes("Thi lần 1"));
+                if (thiLan1Th) thiLan1Th.colSpan = 3;
+                const thiLan2Th = Array.from(theadRows[0].children).find(th => th.textContent.includes("Thi lần 2"));
+                if (thiLan2Th) thiLan2Th.colSpan = 3;
+                const diemChuTh = document.createElement("th");
+                diemChuTh.className = "text-center diem-chu-th";
+                diemChuTh.textContent = "Điểm chữ";
+                diemChuTh.style.width = "80px";
+                theadRows[1].insertBefore(diemChuTh, theadRows[1].children[tongDiem1Index + 1]);
+            }
+        }
+        // Update/insert mark cell for each row
+        const tbodyRows = document.querySelectorAll("table tbody tr");
+        tbodyRows.forEach(tr => {
+            const sttCell = tr.querySelector("td");
+            const isSTT = sttCell && /^\d+$/.test(sttCell.textContent.trim());
+            if (isSTT) {
+                const tds = tr.querySelectorAll("td");
+                const tongDiemCell = tds[7];
+                let diemChu = "";
+                if (tongDiemCell) {
+                    const score = parseFloat(tongDiemCell.textContent.trim());
+                    if (!isNaN(score)) {
+                        diemChu = utils.convertScore(score);
+                    }
+                }
+                // Check if mark cell exists
+                let markCell = tds[8];
+                if (!markCell || !markCell.classList.contains("diem-chu-td")) {
+                    markCell = document.createElement("td");
+                    markCell.className = "text-center diem-chu-td";
+                    tr.insertBefore(markCell, tds[8]);
+                }
+                markCell.textContent = diemChu;
+                markCell.style.color = getColor(diemChu);
+            }
+        });
+    }
+
     // --- GPA Floating UI ---
     function createFloatingGPA() {
         if (document.getElementById("gpaFloatingPanel")) return;
@@ -57,7 +115,7 @@
     }
 
     // --- GPA Calculation ---
-    function updateGPA() {
+    async function updateGPA() {
         let totalScore10 = 0, totalScore4 = 0, totalCredits = 0;
         const courseRowMap = new Map();
         document.querySelectorAll("tr").forEach(row => {
@@ -66,9 +124,9 @@
             const courseCode = cells[1].textContent.trim();
             courseRowMap.set(courseCode, row);
         });
-        courseRowMap.forEach(row => {
+        for (const row of courseRowMap.values()) {
             const cells = row.querySelectorAll("td.text-center");
-            if (cells.length < 7) return;
+            if (cells.length < 7) continue;
 
             const avg = parseFloat(cells[6].textContent.trim());
             const credits = parseFloat(cells[2].textContent.trim());
@@ -79,7 +137,7 @@
                 totalScore4 += convertScore10to4(avg) * credits;
                 totalCredits += credits;
             }
-        });
+        }
         const gpa10Display = document.getElementById("gpa10Display");
         const gpa4Display = document.getElementById("gpa4Display");
         if (gpa10Display && gpa4Display) {
@@ -99,6 +157,7 @@
                 gpa4Display.textContent = "Chưa có dữ liệu";
             }
         }
+        updateMarkColumn();
     }
 
     // --- Add Editable Fields and Logic ---
