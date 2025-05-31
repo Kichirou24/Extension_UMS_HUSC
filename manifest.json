@@ -32,6 +32,14 @@
                 "styles/bootstrap-icons.css"
             ],
             "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "*://student.husc.edu.vn/Survey"
+            ],
+            "js": [
+                "scripts/content_survey.js"
+            ]
         }
     ],
     "web_accessible_resources": [
