@@ -131,6 +131,7 @@ async function extractGrades() {
     let curSemester = null;
     document.querySelectorAll("tbody tr").forEach(row => {
         const cells = row.querySelectorAll("td");
+        console.log(cells);
         if (cells.length === 2 && cells[0].colSpan === 4) {
             curSemester = {
                 semester: extractSemester(cells[0].innerText.trim()),
@@ -138,7 +139,7 @@ async function extractGrades() {
                 courses: []
             };
             semesters.push(curSemester);
-        } else if (cells.length === 10 && curSemester) {
+        } else if (cells.length === 11 && curSemester) {
             curSemester.courses.push({
                 id: cells[0].innerText.trim(),
                 name: cells[1].innerText.trim(),
