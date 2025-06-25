@@ -313,11 +313,44 @@
             const style = document.createElement("style");
             style.setAttribute("data-statistic-btn", "1");
             style.innerHTML = `
-                .btn-statistic { width: 50px; height: 50px; padding: 10px; display: flex; justify-content: center; align-items: center; transition: width 0.3s, padding 0.3s; white-space: nowrap; }
+                .btn-statistic {
+                    width: 50px; height: 50px; padding: 10px;
+                    display: flex; justify-content: center; align-items: center;
+                    transition: width 0.3s, padding 0.3s; white-space: nowrap;
+                }
                 .btn-statistic:hover { width: 180px; padding: 10px 15px; }
                 .btn-statistic span { display: none; }
                 .btn-statistic:hover span { display: inline; }
                 .btn-statistic:hover svg { display: none; }
+                #overlay {
+                    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                    background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center;
+                }
+                #content {
+                    background: #fff; padding: 30px; border-radius: 15px;
+                    box-shadow: 0 0 15px rgba(0,0,0,0.3); width: 90vw; max-width: 1200px; height: auto; max-height: 90vh;
+                    overflow-y: auto; position: relative; display: flex; flex-direction: column;
+                }
+                .panel-container, .panel {
+                    width: 100%;
+                }
+                .panel-header { text-align: center; margin-bottom: 20px; }
+                @media (max-width: 900px) {
+                    #content { width: 98vw; padding: 10px; min-width: unset; }
+                    .panel-container { flex-direction: column !important; }
+                }
+                @media (max-width: 600px) {
+                    #content { width: 100vw; max-width: 100vw; padding: 2vw; border-radius: 0; }
+                    .panel-container, .panel { flex-direction: column !important; width: 100%; }
+                    .panel-header { font-size: 18px; }
+                    .btn-statistic { width: 40px; height: 40px; font-size: 12px; }
+                }
+                .left-panel, .right-panel {
+                    width: 50%;
+                }
+                @media (max-width: 900px) {
+                    .left-panel, .right-panel { width: 100% !important; padding: 10px !important; }
+                }
             `;
             document.head.appendChild(style);
         }

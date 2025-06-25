@@ -74,6 +74,32 @@ export async function getInfoCourseGeneral(courseId) {
     }
     return { qtht, thi };
 }
+export async function calcQTHT(courseId) {
+    const doc = parseHTML(await (await fetch(`${courseId}`)).text());
+    const dataScore = await getScore(doc);
+
+    if (dataScore === 404 || dataScore === undefined) return 404;
+    const res = {
+        qtht: {
+            score: 0,
+            percent: 0
+        },
+        thi: {
+            score: 0,
+            percent: 1
+        }   
+    };
+    
+    dataScore.forEach(item => {
+        res.qtht.score += item.score * item.percent;
+        res.qtht.percent += item.percent;
+        res.thi.percent -= item.percent;
+    })
+
+    res.qtht.score = Math.round((res.qtht.score / res.qtht.percent) * 100) / 100 || 0;
+
+    return res;
+}
 
 // --- Score Extraction ---
 export async function getScore(data) {
@@ -138,7 +164,7 @@ async function extractGrades() {
                 courses: []
             };
             semesters.push(curSemester);
-        } else if (cells.length === 10 && curSemester) {
+        } else if (cells.length === 11 && curSemester) {
             curSemester.courses.push({
                 id: cells[0].innerText.trim(),
                 name: cells[1].innerText.trim(),
