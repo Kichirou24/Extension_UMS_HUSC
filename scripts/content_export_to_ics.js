@@ -36,7 +36,7 @@ function exportToICS() {
                 const id = Math.ceil(idx / 7) + (idx % 7 === 0 ? 1 : 0);
                 const nDay = nextDay(startDates[id - 1], idx % 7);
                 const className = data.match(/data-original-title="(.*?)\s-\sNhóm\s\d{1,}"/)?.[1];
-                const room = data.match(/Phòng học:\s(.*?)<br\s\/>/)?.[1];
+                let room = data.match(/\[([A-Za-z0-9]+)\]/)?.[1];
                 const startPeriod = data.match(/Tiết: (\d{1,2})/);
                 const endPeriod = data.match(/Tiết: \d{1,2} - (\d{1,2})/);
                 if (!className || !room || !startPeriod || !endPeriod) return;

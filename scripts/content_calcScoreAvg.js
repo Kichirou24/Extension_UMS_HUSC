@@ -169,49 +169,83 @@
             const courseCode = cells[1].textContent.trim();
             courseRowMap.set(courseCode, row);
         });
+
+        const tasks = [];
+
         for (const [, row] of courseRowMap) {
             const cells = row.querySelectorAll("td.text-center");
             const courseId = row.querySelector("a[href^='/Course/Details/']")?.href;
-            if (cells.length < 7) continue;
+            if (cells.length < 7 || !courseId) continue;
+
+            tasks.push({ row, courseId, cells });
+        }
+
+        const qthtResults = await Promise.all(
+            tasks.map(({ courseId }) => utils.calcQTHT(courseId))
+        );
+
+        for (let i = 0; i < tasks.length; i++) {
+            const { row, courseId, cells } = tasks[i];
+            const QTHT = qthtResults[i];
             const inputFields = [];
-            for (let i = 4; i <= 5; i++) {
-                const cell = cells[i];
+
+            for (let j = 4; j <= 5; j++) {
+                const cell = cells[j];
                 if (!cell || cell.querySelector("input")) continue;
+
                 const input = document.createElement("input");
                 input.type = "number";
-                input.min = "0";
-                input.max = "10";
-                input.step = "any";
+                input.addEventListener("input", () => {
+                    let value = parseFloat(input.value);
+                    if (value < 0) input.value = 0;
+                    else if (value > 10) input.value = 10;
+                });
+
                 Object.assign(input.style, {
                     width: "50px", padding: "2px 4px", fontSize: "12px", textAlign: "center",
                     MozAppearance: "textfield", appearance: "textfield", webkitAppearance: "none", margin: "0"
                 });
+
                 const oldValue = parseFloat(cell.textContent.trim());
-                if (!isNaN(oldValue)) input.value = oldValue;
+                if (j === 4) {
+                    if (QTHT !== 404)
+                        input.value = QTHT.qtht.score.toFixed(1);
+                    else
+                        input.value = oldValue;
+                } else {
+                    input.value = oldValue;
+                }
+
                 cell.textContent = "";
                 cell.appendChild(input);
-                inputFields[i] = input;
+                inputFields[j] = input;
             }
+
             const handleInput = async () => {
                 const scoreProcess = parseFloat(inputFields[4]?.value);
                 const scoreExam = parseFloat(inputFields[5]?.value);
                 if (!isNaN(scoreProcess) && !isNaN(scoreExam)) {
                     try {
-                        const res = await utils.getInfoCourseGeneral(courseId);
-                        const ratioProcess = parseFloat(res.qtht) || 0;
-                        const ratioExam = parseFloat(res.thi) || 0;
-                        if (ratioProcess + ratioExam > 0) {
+                        const infoCourse = await utils.getInfoCourseGeneral(courseId);
+                        const ratioProcess = parseFloat(infoCourse.qtht) || 0;
+                        const ratioExam = parseFloat(infoCourse.thi) || 0;
+                        if (ratioProcess + ratioExam === 1) {
                             cells[6].textContent = (scoreProcess * ratioProcess + scoreExam * ratioExam).toFixed(1);
                             updateGPA();
                         }
                     } catch (e) {
                         console.error("Lỗi khi lấy thông tin môn học:", e);
                     }
+                } else {
+                    cells[6].textContent = "";
+                    updateGPA();
                 }
             };
+
             inputFields.forEach(input => input && input.addEventListener("input", handleInput));
             if (inputFields[4]?.value && inputFields[5]?.value) handleInput();
         }
+
         if (!document.getElementById("gpa10Display")) {
             const style = document.createElement('style');
             style.textContent = `
